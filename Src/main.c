@@ -52,7 +52,7 @@ int main(void){
 		 *    ..
 		 *    + STEP SIZE = [RANGE] / [2**RESOLUTION]
 		 *    +2 STEP SIZE = [8] / [1024]
-		 *    +2 STEP SIZE = 0.0078125 ≈ 0.0078125
+		 *    +2 STEP SIZE = 0.0078125 ≈ 0.0078
 		 *
 		 *	  ---------------------------
 		 *	  @ - what is "STEP SIZE" meaning here

@@ -12,9 +12,9 @@
 /*
  *  #####################
  *  @ - Why we don't need to declare address for 'Module'
- *      and 'Register'
+ *      and 'Register'.
  *    + because 'STM32 HAL' / 'CMSIS driver' provided 'structure register'
- *      in form of "typedef struct" and "#define"
+ *      in form of "typedef struct" and "#define".
  */
 
 /*
@@ -33,14 +33,14 @@
 
 /*
 	########################
-	+ @ - Initialize GPIOA pin for SPI communication
+	@ - Initialize GPIOA pin for SPI communication
 */
 void spi_gpio_init(void) {
 
 	/*
 	   ---------------------------
 	   @2 - Enable clock access to GPIOA
-	      + We set "GPIOAEN bit" inside "AHB1ENR register"
+	      + We set "GPIOAEN bit" inside "AHB1ENR register".
 	*/
 	RCC->AHB1ENR |= GPIOAEN;
 
@@ -48,7 +48,7 @@ void spi_gpio_init(void) {
 		---------------------------
 		@2 - Set PA5, PA6, PA7 to have 'alternate function mode'
 		   + We assign value '10' to (bit-11, bit-10) (bit-13, bit-12)
-		     and (bit-15, bit-14) inside MODE register
+		     and (bit-15, bit-14) inside MODE register.
 		   ..
 		   + 00 = Input Mode
 		   + 01 = Output Mode
@@ -275,7 +275,7 @@ void spi1_transmit(uint8_t *data, uint32_t size) {
 			   + SPI1->SR
 			   + Status Register for SPI1
 			   + It has many flag bit
-
+			   ..
 			   + TXE = Transmit Buffer Empty
 			   ..
 			   + TXE = 0
@@ -294,7 +294,8 @@ void spi1_transmit(uint8_t *data, uint32_t size) {
 
 		/*
 			---------------------------
-			+ Goal: We assign data inside data[i] into "data register"
+			@2 -
+			   + Goal: We assign data inside data[i] into "data register".
 		*/
 		SPI1->DR = data[i];
 		i++;
@@ -302,58 +303,69 @@ void spi1_transmit(uint8_t *data, uint32_t size) {
 
 	/*
 		 ---------------------------
-		 + Goal: Check if "Data Register" is empty or not
-		 + (Same as previous)
+		 @2 -
+		    + Goal: Check if "Data Register" is empty or not
+		    + (Same as code -> 'while(!(SPI1->SR & SR_TXE)) {}')
 	*/
 	while(!(SPI1->SR & (SR_TXE))) {}
 
 	/*
 		----------------------------
-	    + SPI1->SR
-	    + This is "Status Register" for Module SPI1
-
-	    + SR_BSY = Busy flag
-	    ..
-	    + SR_BSY = 1
-	    + SPI still busy - there are bits that shift-in
-		  and shift-out
-		..
-		+ SR_BSY = 0
-		+ No bit transfer is occuring now
-
-		+ No bit transfer occured -> SR_BSY=0 -> while(0)
+		@2 -
+	       + SPI1->SR
+	       + This is "Status Register" for Module SPI1.
+           ..
+        @3 -
+	       + SR_BSY = Busy flag
+	       ..
+	       + SR_BSY = 1
+	       + SPI still busy - there are bits that shift-in
+		     and shift-out
+		   ..
+		   + SR_BSY = 0
+		   + No bit transfer is occuring now
+           ..
+		   + No bit transfer occured -> SR_BSY=0 -> while(0)
 	*/
 	while(SPI1->SR & (SR_BSY)) {}
 
 	/*
 		----------------------------
-		+ This is "full-duplex"
-	    + SPI has two lines: MOSI (Master → Slave) and MISO (Slave → Master).
-		+ Every clock pulse, tow thing happens : Master shift-out 1-bit (MOSI) |
-		  Slave shift-out back 1-bit (MISO)
-
-	    + temp = SPI1->DR;
-	    + We read data from "Data Register" and stored into "temp" variable
-
-	    + temp = SPI1->SR;
-	    + We read from "Status Register" and stored into "temp variable"
-
-		+ SPI is full-duplex (Every time you transmit, the SPI also receives a byte).
-		+ If you never read that received byte, the next received byte overrun it.
-		+ Analogy :
-		+2 Your SPI has a small inbox (receive buffer).
-		+2 A new byte arrives before you read the old
-			 byte in the inbox.
-		+2 The new byte pushes past the old one
-		    → the old data is lost.
-		+2 The SPI raises the OVR flag to say:
-		   “Hey, you didn’t read me in time!”
-
-		 + Clean up the receive side to avoid error
-
-		 + How to clear OVR on STM32
-		 + You must read two registers in this exact order:
-		   1st-Read "Data Register", 2nd-Read "Status Register"
+		@2 -
+		   + This is "full-duplex".
+	       + SPI has two lines: MOSI (Master → Slave)
+	         and MISO (Slave → Master).
+		   + Every clock pulse, two thing happens :
+		     Master shift-out 1-bit (MOSI) &
+		     Slave shift-out back 1-bit (MISO).
+		   ..
+		@2 -
+	       + code -> temp = SPI1->DR;
+	       + We read data from "Data Register"
+	         and stored into "temp" variable.
+           ..
+	       + temp = SPI1->SR;
+	       + We read from "Status Register"
+	         and stored into "temp variable".
+           ..
+        @2 -
+		   + SPI is full-duplex (Every time you transmit,
+		     the SPI also receives a byte).
+		   + If you never read that received byte, the next received byte
+		     overrun it.
+		   //
+		@3 - Analogy :
+		   + Your SPI has a small inbox (receive buffer).
+		   + A new byte arrives before you read the old byte in the inbox.
+		   + The new byte pushes past the old one → the old data is lost.
+		   + The SPI raises the OVR flag to say: “Hey, you didn’t read me
+		     in time!”
+		   //
+        @3 -
+		   + Clean up the receive side to avoid error
+           + How to clear OVR on STM32
+		   + You must read two registers in this exact order:
+		     1st-Read "Data Register", 2nd-Read "Status Register"
 	*/
 	temp = SPI1->DR;
 	temp = SPI1->SR;
@@ -361,47 +373,47 @@ void spi1_transmit(uint8_t *data, uint32_t size) {
 
 /*
 	#############################
-	+ Goal: Receive bytes from SPI slave
+	@ -
+	  + Goal: Receive bytes from SPI slave
 */
 void spi1_receive(uint8_t *data, uint32_t size) {
 
 	while(size) {
 		/*
 			---------------------------------
-			+ send dummy data
-
-			+ we write "0x00" into "Data Register SPI"
-			+ Master mula menjana 8 nadi clock dan hantar 0x00
-
-			+ Pada masa sama, MISO dari slave mengisi RX.
+			@2 - Send dummy data
+			   + We write "0x00" into "Data Register SPI".
+			   + Master mula menjana 8 nadi clock dan hantar 0x00.
+			   + Pada masa sama, MISO dari slave mengisi RX.
 		*/
 		SPI1->DR = 0;
 
 		/*
 		  ---------------------------------
-		  + wait for RXNE to be set
+		  @2 - Wait for RXNE to be set
+		     //
+			 + SPI1->SR & (SR_RXNE)
+		     + We uses "Bitwise AND operation" to check SR_RXNE bit and
+		       ignore other bit.
+		     //
+		     + SR_RXNE = 1
+		     + All 8-bits have been received
+		     //
+		     + 'All 8-bits received' -> SR_RXNE=1 -> while(!(1))
+		       -> while(0)
 
-		  + SPI1->SR & (SR_RXNE)
-		  + We uses "Bitwise AND operation" to check
-		    SR_RXNE bit and ignore other bit
-		  + ..
-		  + SR_RXNE = 1
-		  + All 8-bits have been received
-		  + ..
-		  + 'All 8-bits received' -> SR_RXNE=1 ->
-		    while(!(1)) -> while(0)
 		*/
 		while(!(SPI1->SR & (SR_RXNE))) {}
 
 		/*
 			---------------------------
-			+ Read data from data register
-
-			+ We assign data from "Data Register" (that we received
-				from SPI) into "*data" pointer
-
-			+ "*data++" = increment pointer
-			+ the pointer now will point the next address
+			@2 - Read data from data register
+               //
+			   + We assign data from "Data Register" (that we received
+				 from SPI) into "*data" pointer
+            @3 -
+			   + "*data++" = increment pointer
+			   + the pointer now will point the next address
 		*/
 		*data++ = (SPI1->DR);
 
